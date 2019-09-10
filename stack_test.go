@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"fmt"
+	goerrors "errors"
 	"runtime"
 	"testing"
 )
@@ -32,8 +32,8 @@ func TestFrameFormat(t *testing.T) {
 	}, {
 		initpc,
 		"%+s",
-		"github.com/pkg/errors.init\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go",
+		"github.com/objenious/errors.init\n" +
+			"\t.+/github.com/objenious/errors/stack_test.go",
 	}, {
 		0,
 		"%s",
@@ -79,8 +79,8 @@ func TestFrameFormat(t *testing.T) {
 	}, {
 		initpc,
 		"%+v",
-		"github.com/pkg/errors.init\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go:9",
+		"github.com/objenious/errors.init\n" +
+			"\t.+/github.com/objenious/errors/stack_test.go:9",
 	}, {
 		0,
 		"%v",
@@ -98,7 +98,7 @@ func TestFuncname(t *testing.T) {
 	}{
 		{"", ""},
 		{"runtime.main", "main"},
-		{"github.com/pkg/errors.funcname", "funcname"},
+		{"github.com/objenious/errors.funcname", "funcname"},
 		{"funcname", "funcname"},
 		{"io.copyBuffer", "copyBuffer"},
 		{"main.(*R).Write", "(*R).Write"},
@@ -119,30 +119,30 @@ func TestStackTrace(t *testing.T) {
 		want []string
 	}{{
 		New("ooh"), []string{
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:121",
+			"github.com/objenious/errors.TestStackTrace\n" +
+				"\t.+/github.com/objenious/errors/stack_test.go:121",
 		},
 	}, {
 		Wrap(New("ooh"), "ahh"), []string{
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:126", // this is the stack of Wrap, not New
+			"github.com/objenious/errors.TestStackTrace\n" +
+				"\t.+/github.com/objenious/errors/stack_test.go:126", // this is the stack of Wrap, not New
 		},
 	}, {
-		Cause(Wrap(New("ooh"), "ahh")), []string{
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:131", // this is the stack of New
+		goerrors.Unwrap(Wrap(New("ooh"), "ahh")), []string{
+			"github.com/objenious/errors.TestStackTrace\n" +
+				"\t.+/github.com/objenious/errors/stack_test.go:131", // this is the stack of New
 		},
 	}, {
 		func() error { return New("ooh") }(), []string{
-			`github.com/pkg/errors.TestStackTrace.func1` +
-				"\n\t.+/github.com/pkg/errors/stack_test.go:136", // this is the stack of New
-			"github.com/pkg/errors.TestStackTrace\n" +
-				"\t.+/github.com/pkg/errors/stack_test.go:136", // this is the stack of New's caller
+			`github.com/objenious/errors.TestStackTrace.func1` +
+				"\n\t.+/github.com/objenious/errors/stack_test.go:136", // this is the stack of New
+			"github.com/objenious/errors.TestStackTrace\n" +
+				"\t.+/github.com/objenious/errors/stack_test.go:136", // this is the stack of New's caller
 		},
-	}, {
-		Cause(func() error {
+	/*}, {
+		goerrors.Unwrap(func() error {
 			return func() error {
-				return Errorf("hello %s", fmt.Sprintf("world"))
+				return Errorf("hello %s", "world")
 			}()
 		}()), []string{
 			`github.com/pkg/errors.TestStackTrace.func2.1` +
@@ -151,15 +151,12 @@ func TestStackTrace(t *testing.T) {
 				"\n\t.+/github.com/pkg/errors/stack_test.go:146", // this is the stack of Errorf's caller
 			"github.com/pkg/errors.TestStackTrace\n" +
 				"\t.+/github.com/pkg/errors/stack_test.go:147", // this is the stack of Errorf's caller's caller
-		},
+		},*/
 	}}
 	for i, tt := range tests {
-		x, ok := tt.err.(interface {
-			StackTrace() StackTrace
-		})
-		if !ok {
-			t.Errorf("expected %#v to implement StackTrace() StackTrace", tt.err)
-			continue
+		x := GetStackTrace(tt.err)
+		if x == nil {
+			t.Fatalf("no stacktrace for test %d %+v", i+1, tt.err)
 		}
 		st := x.StackTrace()
 		for j, want := range tt.want {
@@ -220,19 +217,19 @@ func TestStackTraceFormat(t *testing.T) {
 	}, {
 		stackTrace()[:2],
 		"%v",
-		`\[stack_test.go:174 stack_test.go:221\]`,
+		`\[stack_test.go:171 stack_test.go:218\]`,
 	}, {
 		stackTrace()[:2],
 		"%+v",
 		"\n" +
-			"github.com/pkg/errors.stackTrace\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go:174\n" +
-			"github.com/pkg/errors.TestStackTraceFormat\n" +
-			"\t.+/github.com/pkg/errors/stack_test.go:225",
+			"github.com/objenious/errors.stackTrace\n" +
+			"\t.+/github.com/objenious/errors/stack_test.go:171\n" +
+			"github.com/objenious/errors.TestStackTraceFormat\n" +
+			"\t.+/github.com/objenious/errors/stack_test.go:222",
 	}, {
 		stackTrace()[:2],
 		"%#v",
-		`\[\]errors.Frame{stack_test.go:174, stack_test.go:233}`,
+		`\[\]errors.Frame{stack_test.go:171, stack_test.go:230}`,
 	}}
 
 	for i, tt := range tests {

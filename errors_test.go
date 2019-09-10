@@ -1,10 +1,9 @@
 package errors
 
 import (
-	"errors"
+	goerrors "errors"
 	"fmt"
 	"io"
-	"reflect"
 	"testing"
 )
 
@@ -16,13 +15,13 @@ func TestNew(t *testing.T) {
 		{"", fmt.Errorf("")},
 		{"foo", fmt.Errorf("foo")},
 		{"foo", New("foo")},
-		{"string with format specifiers: %v", errors.New("string with format specifiers: %v")},
+		{"string with format specifiers: %v", goerrors.New("string with format specifiers: %v")},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		got := New(tt.err)
 		if got.Error() != tt.want.Error() {
-			t.Errorf("New.Error(): got: %q, want %q", got, tt.want)
+			t.Errorf("test #%d, New.Error(): got: %q, want %q", i+1, got, tt.want)
 		}
 	}
 }
@@ -56,7 +55,7 @@ type nilError struct{}
 
 func (nilError) Error() string { return "nil error" }
 
-func TestCause(t *testing.T) {
+/*func TestCause(t *testing.T) {
 	x := New("error")
 	tests := []struct {
 		err  error
@@ -104,7 +103,7 @@ func TestCause(t *testing.T) {
 			t.Errorf("test %d: got %#v, want %#v", i+1, got, tt.want)
 		}
 	}
-}
+}*/
 
 func TestWrapfNil(t *testing.T) {
 	got := Wrapf(nil, "no error")
@@ -173,7 +172,7 @@ func TestWithStack(t *testing.T) {
 	}
 }
 
-func TestWithMessageNil(t *testing.T) {
+/*func TestWithMessageNil(t *testing.T) {
 	got := WithMessage(nil, "no error")
 	if got != nil {
 		t.Errorf("WithMessage(nil, \"no error\"): got %#v, expected nil", got)
@@ -222,7 +221,7 @@ func TestWithMessagef(t *testing.T) {
 			t.Errorf("WithMessage(%v, %q): got: %q, want %q", tt.err, tt.message, got, tt.want)
 		}
 	}
-}
+}*/
 
 // errors.New, etc values are not expected to be compared by value
 // but the change in errors#27 made them incomparable. Assert that
@@ -232,13 +231,13 @@ func TestErrorEquality(t *testing.T) {
 	vals := []error{
 		nil,
 		io.EOF,
-		errors.New("EOF"),
+		goerrors.New("EOF"),
 		New("EOF"),
 		Errorf("EOF"),
 		Wrap(io.EOF, "EOF"),
 		Wrapf(io.EOF, "EOF%d", 2),
-		WithMessage(nil, "whoops"),
-		WithMessage(io.EOF, "whoops"),
+		//WithMessage(nil, "whoops"),
+		//WithMessage(io.EOF, "whoops"),
 		WithStack(io.EOF),
 		WithStack(nil),
 	}

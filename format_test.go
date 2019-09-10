@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"errors"
+	goerrors "errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -26,8 +26,8 @@ func TestFormatNew(t *testing.T) {
 		New("error"),
 		"%+v",
 		"error\n" +
-			"github.com/pkg/errors.TestFormatNew\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:26",
+			"github.com/objenious/errors.TestFormatNew\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:26",
 	}, {
 		New("error"),
 		"%q",
@@ -56,8 +56,8 @@ func TestFormatErrorf(t *testing.T) {
 		Errorf("%s", "error"),
 		"%+v",
 		"error\n" +
-			"github.com/pkg/errors.TestFormatErrorf\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:56",
+			"github.com/objenious/errors.TestFormatErrorf\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:56",
 	}}
 
 	for i, tt := range tests {
@@ -82,8 +82,8 @@ func TestFormatWrap(t *testing.T) {
 		Wrap(New("error"), "error2"),
 		"%+v",
 		"error\n" +
-			"github.com/pkg/errors.TestFormatWrap\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:82",
+			"github.com/objenious/errors.TestFormatWrap\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:82",
 	}, {
 		Wrap(io.EOF, "error"),
 		"%s",
@@ -97,15 +97,15 @@ func TestFormatWrap(t *testing.T) {
 		"%+v",
 		"EOF\n" +
 			"error\n" +
-			"github.com/pkg/errors.TestFormatWrap\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:96",
+			"github.com/objenious/errors.TestFormatWrap\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:96",
 	}, {
 		Wrap(Wrap(io.EOF, "error1"), "error2"),
 		"%+v",
 		"EOF\n" +
 			"error1\n" +
-			"github.com/pkg/errors.TestFormatWrap\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:103\n",
+			"github.com/objenious/errors.TestFormatWrap\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:103\n",
 	}, {
 		Wrap(New("error with space"), "context"),
 		"%q",
@@ -135,8 +135,8 @@ func TestFormatWrapf(t *testing.T) {
 		"%+v",
 		"EOF\n" +
 			"error2\n" +
-			"github.com/pkg/errors.TestFormatWrapf\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:134",
+			"github.com/objenious/errors.TestFormatWrapf\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:134",
 	}, {
 		Wrapf(New("error"), "error%d", 2),
 		"%s",
@@ -149,8 +149,8 @@ func TestFormatWrapf(t *testing.T) {
 		Wrapf(New("error"), "error%d", 2),
 		"%+v",
 		"error\n" +
-			"github.com/pkg/errors.TestFormatWrapf\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:149",
+			"github.com/objenious/errors.TestFormatWrapf\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:149",
 	}}
 
 	for i, tt := range tests {
@@ -175,8 +175,8 @@ func TestFormatWithStack(t *testing.T) {
 		WithStack(io.EOF),
 		"%+v",
 		[]string{"EOF",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:175"},
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:175"},
 	}, {
 		WithStack(New("error")),
 		"%s",
@@ -189,37 +189,37 @@ func TestFormatWithStack(t *testing.T) {
 		WithStack(New("error")),
 		"%+v",
 		[]string{"error",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:189",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:189"},
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:189",
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:189"},
 	}, {
 		WithStack(WithStack(io.EOF)),
 		"%+v",
 		[]string{"EOF",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:197",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:197"},
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:197",
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:197"},
 	}, {
 		WithStack(WithStack(Wrapf(io.EOF, "message"))),
 		"%+v",
 		[]string{"EOF",
 			"message",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:205",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:205",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:205"},
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:205",
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:205",
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:205"},
 	}, {
 		WithStack(Errorf("error%d", 1)),
 		"%+v",
 		[]string{"error1",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:216",
-			"github.com/pkg/errors.TestFormatWithStack\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:216"},
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:216",
+			"github.com/objenious/errors.TestFormatWithStack\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:216"},
 	}}
 
 	for i, tt := range tests {
@@ -227,7 +227,7 @@ func TestFormatWithStack(t *testing.T) {
 	}
 }
 
-func TestFormatWithMessage(t *testing.T) {
+/*func TestFormatWithMessage(t *testing.T) {
 	tests := []struct {
 		error
 		format string
@@ -305,7 +305,7 @@ func TestFormatWithMessage(t *testing.T) {
 	for i, tt := range tests {
 		testFormatCompleteCompare(t, i, tt.error, tt.format, tt.want, true)
 	}
-}
+}*/
 
 func TestFormatGeneric(t *testing.T) {
 	starts := []struct {
@@ -314,40 +314,45 @@ func TestFormatGeneric(t *testing.T) {
 	}{
 		{New("new-error"), []string{
 			"new-error",
-			"github.com/pkg/errors.TestFormatGeneric\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:315"},
+			"github.com/objenious/errors.TestFormatGeneric\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:315"},
 		}, {Errorf("errorf-error"), []string{
 			"errorf-error",
-			"github.com/pkg/errors.TestFormatGeneric\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:319"},
-		}, {errors.New("errors-new-error"), []string{
+			"github.com/objenious/errors.TestFormatGeneric\n" +
+				"\t.+/github.com/objenious/errors/format_test.go:319"},
+		}, {goerrors.New("errors-new-error"), []string{
 			"errors-new-error"},
 		},
 	}
 
 	wrappers := []wrapper{
 		{
-			func(err error) error { return WithMessage(err, "with-message") },
-			[]string{"with-message"},
+			func(err error) error { return Wrap(err, "with-message") },
+			[]string{
+				"with-message\n" +
+				"github.com/objenious/errors.(func·002|TestFormatGeneric.func2)\n\t" +
+					".+/github.com/objenious/errors/format_test.go:320",
+			},
 		}, {
 			func(err error) error { return WithStack(err) },
 			[]string{
-				"github.com/pkg/errors.(func·002|TestFormatGeneric.func2)\n\t" +
-					".+/github.com/pkg/errors/format_test.go:333",
+				".+\n" +
+				"github.com/objenious/errors.(func·002|TestFormatGeneric.func2)\n\t" +
+					".+/github.com/objenious/errors/format_test.go:337",
 			},
 		}, {
 			func(err error) error { return Wrap(err, "wrap-error") },
 			[]string{
 				"wrap-error",
-				"github.com/pkg/errors.(func·003|TestFormatGeneric.func3)\n\t" +
-					".+/github.com/pkg/errors/format_test.go:339",
+				"github.com/objenious/errors.(func·003|TestFormatGeneric.func3)\n\t" +
+					".+/github.com/objenious/errors/format_test.go:344",
 			},
 		}, {
 			func(err error) error { return Wrapf(err, "wrapf-error%d", 1) },
 			[]string{
 				"wrapf-error1",
-				"github.com/pkg/errors.(func·004|TestFormatGeneric.func4)\n\t" +
-					".+/github.com/pkg/errors/format_test.go:346",
+				"github.com/objenious/errors.(func·004|TestFormatGeneric.func4)\n\t" +
+					".+/github.com/objenious/errors/format_test.go:351",
 			},
 		},
 	}
@@ -373,10 +378,10 @@ func TestFormatWrappedNew(t *testing.T) {
 		wrappedNew("error"),
 		"%+v",
 		"error\n" +
-			"github.com/pkg/errors.wrappedNew\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:364\n" +
-			"github.com/pkg/errors.TestFormatWrappedNew\n" +
-			"\t.+/github.com/pkg/errors/format_test.go:373",
+			"github.com/objenious/errors.wrappedNew\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:369\n" +
+			"github.com/objenious/errors.TestFormatWrappedNew\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:378",
 	}}
 
 	for i, tt := range tests {
@@ -447,7 +452,7 @@ func parseBlocks(input string, detectStackboundaries bool) ([]string, error) {
 				if detectStackboundaries {
 					if lines[l] {
 						if len(stack) == 0 {
-							return nil, errors.New("len of block must not be zero here")
+							return nil, goerrors.New("len of block must not be zero here")
 						}
 
 						blocks = append(blocks, stack)
@@ -465,7 +470,7 @@ func parseBlocks(input string, detectStackboundaries bool) ([]string, error) {
 		case !isStackLine && !wasStack:
 			blocks = append(blocks, l)
 		default:
-			return nil, errors.New("must not happen")
+			return nil, goerrors.New("must not happen")
 		}
 
 		wasStack = isStackLine
