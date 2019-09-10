@@ -329,30 +329,30 @@ func TestFormatGeneric(t *testing.T) {
 		{
 			func(err error) error { return Wrap(err, "with-message") },
 			[]string{
-				"with-message\n" +
-				"github.com/objenious/errors.(func·002|TestFormatGeneric.func2)\n\t" +
-					".+/github.com/objenious/errors/format_test.go:320",
+				"with-message",
+				"github.com/objenious/errors.(func·002|TestFormatGeneric.func1)\n" +
+					"\t.+/github.com/objenious/errors/format_test.go:330",
 			},
 		}, {
 			func(err error) error { return WithStack(err) },
 			[]string{
-				".+\n" +
-				"github.com/objenious/errors.(func·002|TestFormatGeneric.func2)\n\t" +
-					".+/github.com/objenious/errors/format_test.go:337",
+				//".+\n" +
+					"github.com/objenious/errors.(func·002|TestFormatGeneric.func1)\n" +
+					"\t.+/github.com/objenious/errors/format_test.go:337",
 			},
 		}, {
 			func(err error) error { return Wrap(err, "wrap-error") },
 			[]string{
 				"wrap-error",
-				"github.com/objenious/errors.(func·003|TestFormatGeneric.func3)\n\t" +
-					".+/github.com/objenious/errors/format_test.go:344",
+				"github.com/objenious/errors.(func·003|TestFormatGeneric.func3)\n" +
+					"\t.+/github.com/objenious/errors/format_test.go:344",
 			},
 		}, {
 			func(err error) error { return Wrapf(err, "wrapf-error%d", 1) },
 			[]string{
 				"wrapf-error1",
-				"github.com/objenious/errors.(func·004|TestFormatGeneric.func4)\n\t" +
-					".+/github.com/objenious/errors/format_test.go:351",
+				"github.com/objenious/errors.(func·004|TestFormatGeneric.func4)\n" +
+					"\t.+/github.com/objenious/errors/format_test.go:351",
 			},
 		},
 	}
@@ -547,15 +547,15 @@ func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, li
 		copy(beforeCopy, beforeWant)
 
 		beforeWant := beforeCopy
-		last := len(beforeWant) - 1
+		//last := len(beforeWant) - 1
 		var want []string
 
 		// Merge two stacks behind each other.
-		if strings.ContainsAny(beforeWant[last], "\n") && strings.ContainsAny(w.want[0], "\n") {
+		/*if strings.ContainsAny(beforeWant[last], "\n") && strings.ContainsAny(w.want[0], "\n") {
 			want = append(beforeWant[:last], append([]string{beforeWant[last] + "((?s).*)" + w.want[0]}, w.want[1:]...)...)
-		} else {
-			want = append(beforeWant, w.want...)
-		}
+		} else {*/
+		want = append(beforeWant, w.want...)
+		//}
 
 		testFormatCompleteCompare(t, maxDepth, err, "%+v", want, false)
 		if maxDepth > 0 {

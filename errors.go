@@ -174,16 +174,24 @@ func (w *withStack) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			cause := w.Cause()
-			if cause != nil {
-				fmt.Fprintf(s, "%+v", cause) // recursive : go to bottom
-
-				if causeWithStack, ok := cause.(*withStack); ok && w.msg != "" && causeWithStack.msg != w.msg || w.msg != "" && cause.Error() != w.msg {
-					fmt.Fprintf(s, "\n%+v", w.msg)
+			if w.msg == "" {
+				br := ""
+				if w, ok := s.Width(); ok && w > 0 {
+					br = "\n"
 				}
+				fmt.Fprintf(s, "%s%+v", br, w.error) // recursive : go to bottom
 			} else {
-				// root format
-				fmt.Fprintf(s, "%+v", w.error)
+				cause := w.Cause()
+				if cause != nil {
+					fmt.Fprintf(s, "%+v", cause) // recursive : go to bottom
+
+					if causeWithStack, ok := cause.(*withStack); ok && w.msg != "" && causeWithStack.msg != w.msg || w.msg != "" && cause.Error() != w.msg {
+						fmt.Fprintf(s, "\n%+v", w.msg)
+					}
+				} else {
+					// root format
+					fmt.Fprintf(s, "%+v", w.error)
+				}
 			}
 			w.stack.Format(s, verb)
 			return
