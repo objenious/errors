@@ -227,144 +227,6 @@ func TestFormatWithStack(t *testing.T) {
 	}
 }
 
-/*func TestFormatWithMessage(t *testing.T) {
-	tests := []struct {
-		error
-		format string
-		want   []string
-	}{{
-		WithMessage(New("error"), "error2"),
-		"%s",
-		[]string{"error2: error"},
-	}, {
-		WithMessage(New("error"), "error2"),
-		"%v",
-		[]string{"error2: error"},
-	}, {
-		WithMessage(New("error"), "error2"),
-		"%+v",
-		[]string{
-			"error",
-			"github.com/pkg/errors.TestFormatWithMessage\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:244",
-			"error2"},
-	}, {
-		WithMessage(io.EOF, "addition1"),
-		"%s",
-		[]string{"addition1: EOF"},
-	}, {
-		WithMessage(io.EOF, "addition1"),
-		"%v",
-		[]string{"addition1: EOF"},
-	}, {
-		WithMessage(io.EOF, "addition1"),
-		"%+v",
-		[]string{"EOF", "addition1"},
-	}, {
-		WithMessage(WithMessage(io.EOF, "addition1"), "addition2"),
-		"%v",
-		[]string{"addition2: addition1: EOF"},
-	}, {
-		WithMessage(WithMessage(io.EOF, "addition1"), "addition2"),
-		"%+v",
-		[]string{"EOF", "addition1", "addition2"},
-	}, {
-		Wrap(WithMessage(io.EOF, "error1"), "error2"),
-		"%+v",
-		[]string{"EOF", "error1", "error2",
-			"github.com/pkg/errors.TestFormatWithMessage\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:272"},
-	}, {
-		WithMessage(Errorf("error%d", 1), "error2"),
-		"%+v",
-		[]string{"error1",
-			"github.com/pkg/errors.TestFormatWithMessage\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:278",
-			"error2"},
-	}, {
-		WithMessage(WithStack(io.EOF), "error"),
-		"%+v",
-		[]string{
-			"EOF",
-			"github.com/pkg/errors.TestFormatWithMessage\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:285",
-			"error"},
-	}, {
-		WithMessage(Wrap(WithStack(io.EOF), "inside-error"), "outside-error"),
-		"%+v",
-		[]string{
-			"EOF",
-			"github.com/pkg/errors.TestFormatWithMessage\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:293",
-			"inside-error",
-			"github.com/pkg/errors.TestFormatWithMessage\n" +
-				"\t.+/github.com/pkg/errors/format_test.go:293",
-			"outside-error"},
-	}}
-
-	for i, tt := range tests {
-		testFormatCompleteCompare(t, i, tt.error, tt.format, tt.want, true)
-	}
-}
-
-func TestFormatGeneric(t *testing.T) {
-	starts := []struct {
-		err  error
-		want []string
-	}{
-		{New("new-error"), []string{
-			"new-error",
-			"github.com/objenious/errors.TestFormatGeneric\n" +
-				"\t.+/github.com/objenious/errors/format_test.go:315"},
-		}, {Errorf("errorf-error"), []string{
-			"errorf-error",
-			"github.com/objenious/errors.TestFormatGeneric\n" +
-				"\t.+/github.com/objenious/errors/format_test.go:319"},
-		}, {goerrors.New("errors-new-error"), []string{
-			"errors-new-error"},
-		},
-	}
-
-	wrappers := []wrapper{
-		{
-			func(err error) error { return Wrap(err, "with-message") },
-			[]string{
-				"with-message",
-				"github.com/objenious/errors.(func·002|TestFormatGeneric.func1)\n" +
-					"\t.+/github.com/objenious/errors/format_test.go:330",
-			},
-		}, {
-			func(err error) error { return WithStack(err) },
-			[]string{
-				//".+\n" +
-					"github.com/objenious/errors.(func·002|TestFormatGeneric.func1)\n" +
-					"\t.+/github.com/objenious/errors/format_test.go:337",
-			},
-		}, {
-			func(err error) error { return Wrap(err, "wrap-error") },
-			[]string{
-				"wrap-error",
-				"github.com/objenious/errors.(func·003|TestFormatGeneric.func3)\n" +
-					"\t.+/github.com/objenious/errors/format_test.go:344",
-			},
-		}, {
-			func(err error) error { return Wrapf(err, "wrapf-error%d", 1) },
-			[]string{
-				"wrapf-error1",
-				"github.com/objenious/errors.(func·004|TestFormatGeneric.func4)\n" +
-					"\t.+/github.com/objenious/errors/format_test.go:351",
-			},
-		},
-	}
-
-	for s := range starts {
-		err := starts[s].err
-		want := starts[s].want
-		testFormatCompleteCompare(t, s, err, "%+v", want, false)
-		testGenericRecursive(t, err, want, wrappers, 3)
-	}
-}*/
-
 func wrappedNew(message string) error { // This function will be mid-stack inlined in go 1.12+
 	return New(message)
 }
@@ -379,9 +241,9 @@ func TestFormatWrappedNew(t *testing.T) {
 		"%+v",
 		"error\n" +
 			"github.com/objenious/errors.wrappedNew\n" +
-			"\t.+/github.com/objenious/errors/format_test.go:369\n" +
+			"\t.+/github.com/objenious/errors/format_test.go:231\n" +
 			"github.com/objenious/errors.TestFormatWrappedNew\n" +
-			"\t.+/github.com/objenious/errors/format_test.go:378",
+			"\t.+/github.com/objenious/errors/format_test.go:240",
 	}}
 
 	for i, tt := range tests {
@@ -516,11 +378,6 @@ func testFormatCompleteCompare(t *testing.T, n int, arg interface{}, format stri
 	}
 }
 
-/*type wrapper struct {
-	wrap func(err error) error
-	want []string
-}*/
-
 func prettyBlocks(blocks []string) string {
 	var out []string
 
@@ -530,36 +387,3 @@ func prettyBlocks(blocks []string) string {
 
 	return "   " + strings.Join(out, "\n   ")
 }
-
-/*func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, list []wrapper, maxDepth int) {
-	if len(beforeWant) == 0 {
-		panic("beforeWant must not be empty")
-	}
-	for _, w := range list {
-		if len(w.want) == 0 {
-			panic("want must not be empty")
-		}
-
-		err := w.wrap(beforeErr)
-
-		// Copy required cause append(beforeWant, ..) modified beforeWant subtly.
-		beforeCopy := make([]string, len(beforeWant))
-		copy(beforeCopy, beforeWant)
-
-		beforeWant := beforeCopy
-		last := len(beforeWant) - 1
-		var want []string
-
-		// Merge two stacks behind each other.
-		if strings.ContainsAny(beforeWant[last], "\n") && strings.ContainsAny(w.want[0], "\n") {
-			want = append(beforeWant[:last], append([]string{beforeWant[last] + "((?s).*)" + w.want[0]}, w.want[1:]...)...)
-		} else {
-			want = append(beforeWant, w.want...)
-		}
-
-		testFormatCompleteCompare(t, maxDepth, err, "%+v", want, false)
-		if maxDepth > 0 {
-			testGenericRecursive(t, err, want, list, maxDepth-1)
-		}
-	}
-}*/
