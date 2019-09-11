@@ -4,6 +4,7 @@ import (
 	goerrors "errors"
 	"fmt"
 	"io"
+	"reflect"
 	"testing"
 )
 
@@ -72,7 +73,7 @@ func TestUnwrap(t *testing.T) {
 	}
 }
 
-/*type nilError struct{}
+type nilError struct{}
 
 func (nilError) Error() string { return "nil error" }
 
@@ -103,14 +104,14 @@ func TestCause(t *testing.T) {
 		want: io.EOF,
 	}, {
 		err:  x, // return from errors.New
-		want: x,
+		want: x.(*withStack).error,
 	}, {
-		WithMessage(nil, "whoops"),
-		nil,
-	}, {
-		WithMessage(io.EOF, "whoops"),
-		io.EOF,
-	}, {
+		//		WithMessage(nil, "whoops"),
+		//		nil,
+		//	}, {
+		//		WithMessage(io.EOF, "whoops"),
+		//		io.EOF,
+		//	}, {
 		WithStack(nil),
 		nil,
 	}, {
@@ -124,7 +125,7 @@ func TestCause(t *testing.T) {
 			t.Errorf("test %d: got %#v, want %#v", i+1, got, tt.want)
 		}
 	}
-}*/
+}
 
 func TestWrapfNil(t *testing.T) {
 	got := Wrapf(nil, "no error")

@@ -280,7 +280,7 @@ func (w *withMessage) Format(s fmt.State, verb rune) {
 	case 's', 'q':
 		io.WriteString(s, w.Error())
 	}
-}
+}*/
 
 // Cause returns the underlying cause of the error, if possible.
 // An error value has a cause if it implements the following
@@ -294,17 +294,14 @@ func (w *withMessage) Format(s fmt.State, verb rune) {
 // be returned. If the error is nil, nil will be returned without further
 // investigation.
 func Cause(err error) error {
-	type causer interface {
-		Cause() error
-	}
-
-	for err != nil {
-		cause, ok := err.(causer)
-		if !ok {
-			break
+	for {
+		unwrap := goerrors.Unwrap(err)
+		if unwrap == nil {
+			if wrap, ok := err.(*withStack); ok {
+				return wrap.error
+			}
+			return err
 		}
-		err = cause.Cause()
+		err = unwrap
 	}
-	return err
 }
-*/
