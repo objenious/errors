@@ -72,11 +72,11 @@ func TestUnwrap(t *testing.T) {
 	}
 }
 
-type nilError struct{}
+/*type nilError struct{}
 
 func (nilError) Error() string { return "nil error" }
 
-/*func TestCause(t *testing.T) {
+func TestCause(t *testing.T) {
 	x := New("error")
 	tests := []struct {
 		err  error

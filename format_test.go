@@ -516,10 +516,10 @@ func testFormatCompleteCompare(t *testing.T, n int, arg interface{}, format stri
 	}
 }
 
-type wrapper struct {
+/*type wrapper struct {
 	wrap func(err error) error
 	want []string
-}
+}*/
 
 func prettyBlocks(blocks []string) string {
 	var out []string

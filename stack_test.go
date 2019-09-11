@@ -139,7 +139,7 @@ func TestStackTrace(t *testing.T) {
 			"github.com/objenious/errors.TestStackTrace\n" +
 				"\t.+/github.com/objenious/errors/stack_test.go:136", // this is the stack of New's caller
 		},
-	/*}, {
+		/*}, {
 		goerrors.Unwrap(func() error {
 			return func() error {
 				return Errorf("hello %s", "world")
