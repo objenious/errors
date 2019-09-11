@@ -51,6 +51,27 @@ func TestWrap(t *testing.T) {
 	}
 }
 
+func TestUnwrap(t *testing.T) {
+	errSources := []error{goerrors.New("test"), New("test")}
+	for _, src := range errSources {
+		w := src
+		for i := 0; i < 10; i++ {
+			w = Wrap(w, "wrap")
+			w = Wrapf(w, "wrapf %d", i)
+		}
+		for {
+			unw := goerrors.Unwrap(w)
+			if unw == nil {
+				break
+			}
+			w = unw
+		}
+		if w != src {
+			t.Fatalf("unwrapped error different than the source: %v != %v", w, src)
+		}
+	}
+}
+
 type nilError struct{}
 
 func (nilError) Error() string { return "nil error" }

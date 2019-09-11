@@ -305,7 +305,7 @@ func TestFormatWithStack(t *testing.T) {
 	for i, tt := range tests {
 		testFormatCompleteCompare(t, i, tt.error, tt.format, tt.want, true)
 	}
-}*/
+}
 
 func TestFormatGeneric(t *testing.T) {
 	starts := []struct {
@@ -363,7 +363,7 @@ func TestFormatGeneric(t *testing.T) {
 		testFormatCompleteCompare(t, s, err, "%+v", want, false)
 		testGenericRecursive(t, err, want, wrappers, 3)
 	}
-}
+}*/
 
 func wrappedNew(message string) error { // This function will be mid-stack inlined in go 1.12+
 	return New(message)
@@ -531,7 +531,7 @@ func prettyBlocks(blocks []string) string {
 	return "   " + strings.Join(out, "\n   ")
 }
 
-func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, list []wrapper, maxDepth int) {
+/*func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, list []wrapper, maxDepth int) {
 	if len(beforeWant) == 0 {
 		panic("beforeWant must not be empty")
 	}
@@ -547,19 +547,19 @@ func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, li
 		copy(beforeCopy, beforeWant)
 
 		beforeWant := beforeCopy
-		//last := len(beforeWant) - 1
+		last := len(beforeWant) - 1
 		var want []string
 
 		// Merge two stacks behind each other.
-		/*if strings.ContainsAny(beforeWant[last], "\n") && strings.ContainsAny(w.want[0], "\n") {
+		if strings.ContainsAny(beforeWant[last], "\n") && strings.ContainsAny(w.want[0], "\n") {
 			want = append(beforeWant[:last], append([]string{beforeWant[last] + "((?s).*)" + w.want[0]}, w.want[1:]...)...)
-		} else {*/
-		want = append(beforeWant, w.want...)
-		//}
+		} else {
+			want = append(beforeWant, w.want...)
+		}
 
 		testFormatCompleteCompare(t, maxDepth, err, "%+v", want, false)
 		if maxDepth > 0 {
 			testGenericRecursive(t, err, want, list, maxDepth-1)
 		}
 	}
-}
+}*/
