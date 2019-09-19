@@ -29,16 +29,9 @@
 //
 // Retrieving the cause of an error
 //
-// Using errors.Wrap constructs a stack of errors, adding context to the
-// preceding error. Depending on the nature of the error it may be necessary
-// to reverse the operation of errors.Wrap to retrieve the original error
-// for inspection. Any error value which implements this interface
+// Using errors.Wrap constructs a stack of errors compatible with Go 1.13 errors wrapping
 //
-//     type causer interface {
-//             Cause() error
-//     }
-//
-// can be inspected by errors.Cause. errors.Cause will recursively retrieve
+// It can be inspected by errors.Cause. errors.Cause will recursively retrieve
 // the topmost error that does not implement causer, which is assumed to be
 // the original cause. For example:
 //
@@ -48,9 +41,6 @@
 //     default:
 //             // unknown error
 //     }
-//
-// Although the causer interface is not exported by this package, it is
-// considered a part of its stable public interface.
 //
 // Formatted printing of errors
 //
@@ -93,6 +83,7 @@
 package errors
 
 import (
+	goerrors "errors"
 	"fmt"
 	"io"
 )
@@ -100,9 +91,10 @@ import (
 // New returns an error with the supplied message.
 // New also records the stack trace at the point it was called.
 func New(message string) error {
-	return &fundamental{
-		msg:   message,
-		stack: callers(),
+	return &withStack{
+		goerrors.New(message),
+		callers(),
+		"",
 	}
 }
 
@@ -110,33 +102,10 @@ func New(message string) error {
 // as a value that satisfies error.
 // Errorf also records the stack trace at the point it was called.
 func Errorf(format string, args ...interface{}) error {
-	return &fundamental{
-		msg:   fmt.Sprintf(format, args...),
-		stack: callers(),
-	}
-}
-
-// fundamental is an error that has a message and a stack, but no caller.
-type fundamental struct {
-	msg string
-	*stack
-}
-
-func (f *fundamental) Error() string { return f.msg }
-
-func (f *fundamental) Format(s fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if s.Flag('+') {
-			io.WriteString(s, f.msg)
-			f.stack.Format(s, verb)
-			return
-		}
-		fallthrough
-	case 's':
-		io.WriteString(s, f.msg)
-	case 'q':
-		fmt.Fprintf(s, "%q", f.msg)
+	return &withStack{
+		fmt.Errorf(format, args...),
+		callers(),
+		"",
 	}
 }
 
@@ -149,29 +118,57 @@ func WithStack(err error) error {
 	return &withStack{
 		err,
 		callers(),
+		"",
 	}
 }
 
 type withStack struct {
 	error
 	*stack
+	msg string
 }
 
-func (w *withStack) Cause() error { return w.error }
+// Unwrap unwraps one level of this error
+func (w *withStack) Unwrap() error {
+	return goerrors.Unwrap(w.error)
+}
 
+// Cause is the same as Unwrap, returns the cause of this error
+func (w *withStack) Cause() error {
+	return w.Unwrap()
+}
+
+// Format formats the error with stack trace if available
 func (w *withStack) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "%+v", w.Cause())
+			if w.msg == "" {
+				br := ""
+				if w, ok := s.Width(); ok && w > 0 {
+					br = "\n"
+				}
+				_, _ = fmt.Fprintf(s, "%s%+v", br, w.error) // recursive : go to bottom
+			} else {
+				if cause := w.Cause(); cause != nil {
+					_, _ = fmt.Fprintf(s, "%+v", cause) // recursive : go to bottom
+
+					if causeWithStack, ok := cause.(*withStack); ok && w.msg != "" && causeWithStack.msg != w.msg || w.msg != "" && cause.Error() != w.msg {
+						_, _ = fmt.Fprintf(s, "\n%+v", w.msg)
+					}
+				} else {
+					// root format
+					_, _ = fmt.Fprintf(s, "%+v", w.error)
+				}
+			}
 			w.stack.Format(s, verb)
 			return
 		}
 		fallthrough
 	case 's':
-		io.WriteString(s, w.Error())
+		_, _ = io.WriteString(s, w.error.Error())
 	case 'q':
-		fmt.Fprintf(s, "%q", w.Error())
+		_, _ = fmt.Fprintf(s, "%q", w.Error())
 	}
 }
 
@@ -182,13 +179,11 @@ func Wrap(err error, message string) error {
 	if err == nil {
 		return nil
 	}
-	err = &withMessage{
-		cause: err,
-		msg:   message,
-	}
+	err = fmt.Errorf("%s: %w", message, err)
 	return &withStack{
 		err,
 		callers(),
+		message,
 	}
 }
 
@@ -199,59 +194,13 @@ func Wrapf(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	err = &withMessage{
-		cause: err,
-		msg:   fmt.Sprintf(format, args...),
-	}
+	msg := fmt.Sprintf(format, args...)
+	args = append(args, err)
+	err = fmt.Errorf(format+": %w", args...)
 	return &withStack{
 		err,
 		callers(),
-	}
-}
-
-// WithMessage annotates err with a new message.
-// If err is nil, WithMessage returns nil.
-func WithMessage(err error, message string) error {
-	if err == nil {
-		return nil
-	}
-	return &withMessage{
-		cause: err,
-		msg:   message,
-	}
-}
-
-// WithMessagef annotates err with the format specifier.
-// If err is nil, WithMessagef returns nil.
-func WithMessagef(err error, format string, args ...interface{}) error {
-	if err == nil {
-		return nil
-	}
-	return &withMessage{
-		cause: err,
-		msg:   fmt.Sprintf(format, args...),
-	}
-}
-
-type withMessage struct {
-	cause error
-	msg   string
-}
-
-func (w *withMessage) Error() string { return w.msg + ": " + w.cause.Error() }
-func (w *withMessage) Cause() error  { return w.cause }
-
-func (w *withMessage) Format(s fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if s.Flag('+') {
-			fmt.Fprintf(s, "%+v\n", w.Cause())
-			io.WriteString(s, w.msg)
-			return
-		}
-		fallthrough
-	case 's', 'q':
-		io.WriteString(s, w.Error())
+		msg,
 	}
 }
 
@@ -267,16 +216,14 @@ func (w *withMessage) Format(s fmt.State, verb rune) {
 // be returned. If the error is nil, nil will be returned without further
 // investigation.
 func Cause(err error) error {
-	type causer interface {
-		Cause() error
-	}
-
-	for err != nil {
-		cause, ok := err.(causer)
-		if !ok {
-			break
+	for {
+		unwrap := goerrors.Unwrap(err)
+		if unwrap == nil {
+			if wrap, ok := err.(*withStack); ok {
+				return wrap.error
+			}
+			return err
 		}
-		err = cause.Cause()
+		err = unwrap
 	}
-	return err
 }

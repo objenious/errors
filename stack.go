@@ -1,6 +1,7 @@
 package errors
 
 import (
+	goerrors "errors"
 	"fmt"
 	"io"
 	"path"
@@ -8,6 +9,21 @@ import (
 	"strconv"
 	"strings"
 )
+
+// GetStackTrace returns the stack trace if exists
+func GetStackTrace(err error) *stack {
+	cause := goerrors.Unwrap(err)
+	if cause != nil {
+		st := GetStackTrace(cause)
+		if st != nil {
+			return st
+		}
+	}
+	if err, ok := err.(*withStack); ok {
+		return err.stack
+	}
+	return nil
+}
 
 // Frame represents a program counter inside a stack frame.
 // For historical reasons if Frame is interpreted as a uintptr

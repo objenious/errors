@@ -1,17 +1,16 @@
-// +build go1.7
+// +build go1.13
 
 package errors
 
 import (
+	goerrors "errors"
 	"fmt"
 	"testing"
-
-	stderrors "errors"
 )
 
 func noErrors(at, depth int) error {
 	if at >= depth {
-		return stderrors.New("no error")
+		return goerrors.New("no error")
 	}
 	return noErrors(at+1, depth)
 }
@@ -41,7 +40,7 @@ func BenchmarkErrors(b *testing.B) {
 		{1000, true},
 	}
 	for _, r := range runs {
-		part := "pkg/errors"
+		part := "objenious/errors"
 		if r.std {
 			part = "errors"
 		}
@@ -97,7 +96,7 @@ func BenchmarkStackFormatting(b *testing.B) {
 		name := fmt.Sprintf("%s-stacktrace-%d", r.format, r.stack)
 		b.Run(name, func(b *testing.B) {
 			err := yesErrors(0, r.stack)
-			st := err.(*fundamental).stack.StackTrace()
+			st := err.(*withStack).stack.StackTrace()
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
